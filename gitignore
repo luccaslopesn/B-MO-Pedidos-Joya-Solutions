@@ -1,0 +1,132 @@
+# ==========================================================
+#  B-MO · .gitignore
+#  Organizado por área: sistema, IDEs, .NET, Node/React,
+#  testes, Docker/segredos e ferramentas de IA.
+# ==========================================================
+
+
+# ----------------------------------------------------------
+#  Sistema operacional
+# ----------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+
+# ----------------------------------------------------------
+#  IDEs e editores
+# ----------------------------------------------------------
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*~
+
+# VS Code: ignora tudo, menos as configurações compartilhadas do projeto
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+
+# ----------------------------------------------------------
+#  .NET (backend)
+# ----------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+publish/
+
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+project.lock.json
+project.fragment.lock.json
+
+# Configuração local de desenvolvimento (segredos ficam fora do repositório)
+appsettings.*.local.json
+**/Properties/launchSettings.local.json
+
+
+# ----------------------------------------------------------
+#  Node / React (frontend e e2e)
+# ----------------------------------------------------------
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+*.tsbuildinfo
+.eslintcache
+.npm/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# ----------------------------------------------------------
+#  Testes e cobertura
+# ----------------------------------------------------------
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+lcov.info
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+playwright/.auth/
+
+
+# ----------------------------------------------------------
+#  Docker, ambiente e segredos
+# ----------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+docker-compose.override.yml
+
+*.pfx
+*.pem
+*.key
+
+
+# ----------------------------------------------------------
+#  Ferramentas de IA
+# ----------------------------------------------------------
+# Configuração pessoal do Claude Code. A pasta .claude/ e o
+# settings.json do projeto SÃO versionados (fazem parte da entrega).
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Graphify: cache local. A decidir se o grafo gerado
+# (graphify-out/) será versionado depois de criado.
+.graphify-cache/
+
+
+# ----------------------------------------------------------
+#  Diversos
+# ----------------------------------------------------------
+*.log
+*.tmp
+*.bak
