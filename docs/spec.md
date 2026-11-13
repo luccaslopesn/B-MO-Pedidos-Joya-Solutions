@@ -147,6 +147,7 @@ O status do erro diz que tipo de problema aconteceu:
 | **400** | Não foi possível ler a requisição, ou um parâmetro está fora do permitido. | JSON malformado, campo obrigatório ausente, data inicial depois da final, `limite=50` |
 | **404** | O recurso pedido no endereço não existe. | `GET /pedidos/999999` |
 | **422** | A requisição foi entendida, mas viola uma regra de negócio. | Cliente inexistente, estoque insuficiente |
+| **500** | Erro inesperado no servidor. A resposta é genérica, com `traceId` para rastrear no log, sem detalhes internos. | Banco fora do ar |
 
 O 400 usa o formato padrão de validação do ASP.NET Core (`errors` por campo). O 422 usa o formato abaixo, com um código estável que o front e os testes podem usar sem depender do texto da mensagem:
 
@@ -313,6 +314,7 @@ Todas as datas aparecem no horário de São Paulo (RN-12), mesmo que o computado
 - O usuário adiciona linhas de item. Cada linha tem produto (com preço e estoque visíveis), quantidade e subtotal. O total do pedido aparece no rodapé.
 - A tela já evita os erros óbvios antes de enviar: exige pelo menos um item, quantidade mínima de 1, quantidade até o estoque exibido, e desativa nas outras linhas um produto já escolhido.
 - Mesmo assim, quem decide é o servidor. Se ele recusar, cada erro aparece **na linha do produto correspondente** (por exemplo, o estoque disponível atualizado, caso outra pessoa tenha comprado nesse meio-tempo).
+- Se a falha não for de regra (servidor fora do ar ou erro inesperado), o modal continua aberto com os dados preenchidos e mostra um aviso para tentar de novo.
 - Ao salvar com sucesso, o modal fecha, aparece uma confirmação, e a lista se atualiza com o novo pedido no topo, sem recarregar a página.
 
 ---
