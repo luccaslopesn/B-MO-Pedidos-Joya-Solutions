@@ -392,6 +392,13 @@ Cada critério diz em qual nível de teste ele é verificado: **U** (unitário),
 |---|---|---|---|
 | CA-39 | Clonar o repositório numa pasta nova e rodar `docker compose up`. | Banco criado e com dados de exemplo, API e front no ar, sem nenhum passo manual. | Manual e CI |
 
+### 8.7 Erros inesperados
+
+| ID | Cenário | Resultado esperado | Teste |
+|---|---|---|---|
+| CA-40 | Falha inesperada no servidor durante uma requisição (por exemplo, banco indisponível). | `500` em ProblemDetails com `traceId`; a resposta não traz stack trace, mensagem da exceção nem nomes internos; o mesmo `traceId` aparece no log. | I |
+| CA-41 | Salvar o novo pedido com a API fora do ar ou respondendo `500`. | O modal continua aberto, com cliente e itens preenchidos, e mostra o aviso para tentar de novo; com a API de volta, tentar de novo cria o pedido sem precisar remontá-lo. | E2E |
+
 ---
 
 ## 9. Restrições técnicas
