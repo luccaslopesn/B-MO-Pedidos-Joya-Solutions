@@ -41,5 +41,18 @@
       "PowerShell(type .env*)",
       "PowerShell(Get-Content .env*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/proteger-historico.mjs\""
+          }
+        ]
+      }
+    ]
   }
 }
