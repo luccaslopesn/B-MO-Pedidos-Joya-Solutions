@@ -23,6 +23,9 @@ Os itens marcados como *(planejado)* ainda não existem; a estrutura completa es
 ├── CLAUDE.md               este guia
 ├── .gitignore              organizado por área (sistema, IDEs, .NET, Node, testes, segredos, IA)
 ├── .claude/                configuração compartilhada do Claude Code (versionada, faz parte da entrega)
+│   ├── settings.json       permissões e registro dos hooks
+│   ├── hooks/              scripts Node dos hooks (ver "Automação do Claude")
+│   └── agents/             agentes revisor e escritor-de-testes
 ├── docker-compose.yml      (planejado) sobe banco, API e front com um único comando
 ├── database/               (planejado) scripts de criação e carga inicial, executados ao subir o ambiente
 ├── backend/                (planejado) API .NET 10 e testes unitários e de integração
@@ -31,6 +34,7 @@ Os itens marcados como *(planejado)* ainda não existem; a estrutura completa es
 └── docs/
     ├── spec.md             o quê e critérios de aceite (fonte da verdade)
     ├── plan.md             como implementar, incluindo índices e o motivo de cada um
+    ├── diario-ia.md        correções feitas pelas pessoas no que a IA gerou
     └── fluxos/             (planejado) cada fluxo principal explicado em prosa para quem nunca viu o projeto
 ```
 
@@ -170,3 +174,30 @@ Todo erro sai como **ProblemDetails** (RFC 9457), com `Content-Type: application
 - Para trabalho novo, crie uma branch a partir da `main` (`feat/criar-pedido`, `fix/filtro-fuso`). Nunca use force push na `main`.
 - Nunca pule hooks (`--no-verify`) nem assinatura.
 - Nunca versione segredos: `.env`, `appsettings.*.local.json`, certificados (`*.pfx`, `*.pem`, `*.key`) e `CLAUDE.local.md`. Para configuração de exemplo, use `.env.example`.
+
+## Automação do Claude
+
+Tudo fica em `.claude/` e vale para quem abrir o projeto com o Claude Code. Os hooks são scripts Node (`.mjs`, sem dependências, iguais no Windows, Mac e Linux) que recebem o evento em JSON pelo stdin. Saída `0` deixa seguir; saída `2` bloqueia e devolve o erro ao Claude. Todos ficam em silêncio quando ainda não existe o que eles verificam, então não atrapalham a fase em que só há documentação.
+
+### Hooks
+
+| Hook | Quando roda | O que faz | Quando fica inativo |
+|---|---|---|---|
+| `proteger-historico` | Antes de um comando de terminal (Bash ou PowerShell) | Recusa comandos que reescrevem o histórico do git: `rebase`, `commit --amend`, `push --force` (também `-f`, `--force-with-lease` e `+ramo`), `reset --hard`, `merge --squash`, `filter-branch` e `filter-repo`. Quem errou faz um commit novo. | Nunca fica inativo. Só deixa passar o que não é um desses comandos: uma mensagem de commit que cita "rebase" passa. |
+| `verificar-edicao` | Depois de editar um arquivo (Edit, Write ou MultiEdit) | Em `.cs`, compila com `dotnet build backend/BMO.slnx` e devolve só as linhas de erro (até 20). Em `.ts` e `.tsx`, roda o eslint só no arquivo editado. | Para qualquer outra extensão; sem `backend/BMO.slnx` (`.cs`); sem `frontend/package.json` ou sem o eslint instalado (`.ts` e `.tsx`); em arquivo `.ts` fora de `frontend/`; sem o comando `dotnet`; ou se passar de 110 s. |
+| `portao-testes` | Quando o Claude vai encerrar o turno | Roda os testes unitários do backend. Se algum falhar, mostra quais e o Claude continua o turno para corrigir. Os de integração ficam de fora: são pesados e rodam no CI. | Sem mudanças em `backend/` (git status limpo); sem `backend/tests/BMO.Testes.Unitarios`; ou quando o Claude já está continuando por causa dele, para não prender o turno num laço. |
+
+### Agentes
+
+| Agente | Quando usar | O que faz |
+|---|---|---|
+| `revisor` | Antes de cada commit de feature | Lê o diff e o confere contra este guia e contra as regras (RN) e os critérios (CA) da spec, além de checar SQL, C# e segredos. Responde em três blocos (Bloqueadores, Sugestões e Ok), com arquivo e linha. Só lê: não edita nada e usa apenas `git diff`, `git diff --staged`, `git log` e `git show`. |
+| `escritor-de-testes` | Para escrever os testes de um critério de aceite **antes** da implementação | Recebe IDs de critérios (ex.: `CA-05`), escreve o teste no nível que a spec indica (U, I ou E2E), com nome `Metodo_Cenario_ResultadoEsperado_CAxx` e `Trait("CA", "CA-xx")` (no Playwright, o CA vai no título) e roda para confirmar que falha pelo motivo certo. Escreve só em `backend/tests/` e `e2e/`, nunca em `src/`. |
+
+### Permissões e cuidados
+
+- `settings.json` libera sem perguntar `dotnet build`, `test` e `restore`, `npm run`, `npx playwright`, `docker compose` e os comandos de git do dia a dia (`status`, `diff`, `log`, `add`, `commit`, `branch`, `checkout`, `switch`). Liberar `git commit` não muda a regra de "Regras de git": só commitar quando for pedido.
+- O bloqueio de leitura do `.env` evita acidentes, mas **não é uma fronteira de segurança**: a proteção de verdade é o `.env` conter só senhas de desenvolvimento local. Como o bloqueio de `cat .env*` usa curinga, ele também barra `cat .env.example`; para ler o exemplo, use a ferramenta de leitura de arquivos.
+- Os hooks não interpretam `bash -c "..."`, `eval` nem aliases do git. Eles seguram acidentes, não quem quer burlar de propósito.
+- Para testar um hook à mão, mande o JSON pelo stdin e olhe o código de saída. Exemplo: `echo '{"tool_input":{"command":"git rebase main"}}' | node .claude/hooks/proteger-historico.mjs; echo $?` deve mostrar a mensagem de bloqueio e `2`.
+- Mudou um hook ou um agente? Atualize esta seção no mesmo commit.

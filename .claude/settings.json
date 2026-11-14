@@ -1,0 +1,81 @@
+{
+  "$comment": "O deny de .env reduz acidentes (ler a senha sem querer e jogá-la no contexto), mas NÃO é fronteira de segurança: há outras formas de ler um arquivo. A proteção real é o .env só conter senhas de desenvolvimento local (plan.md, seção 7.1). O .env.example continua legível de propósito.",
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet restore *)",
+      "Bash(npm run *)",
+      "Bash(npx playwright *)",
+      "Bash(docker compose *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "PowerShell(dotnet build *)",
+      "PowerShell(dotnet test *)",
+      "PowerShell(dotnet restore *)",
+      "PowerShell(npm run *)",
+      "PowerShell(npx playwright *)",
+      "PowerShell(docker compose *)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git log *)",
+      "PowerShell(git add *)",
+      "PowerShell(git commit *)",
+      "PowerShell(git branch *)",
+      "PowerShell(git checkout *)",
+      "PowerShell(git switch *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./**/.env)",
+      "Bash(cat .env*)",
+      "Bash(type .env*)",
+      "Bash(Get-Content .env*)",
+      "PowerShell(cat .env*)",
+      "PowerShell(type .env*)",
+      "PowerShell(Get-Content .env*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/proteger-historico.mjs\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/portao-testes.mjs\"",
+            "timeout": 180
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/verificar-edicao.mjs\"",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
