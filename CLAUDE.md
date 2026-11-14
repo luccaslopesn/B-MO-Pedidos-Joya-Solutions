@@ -34,6 +34,7 @@ Os itens marcados como *(planejado)* ainda não existem; a estrutura completa es
 └── docs/
     ├── spec.md             o quê e critérios de aceite (fonte da verdade)
     ├── plan.md             como implementar, incluindo índices e o motivo de cada um
+    ├── diario-ia.md        correções feitas pelas pessoas no que a IA gerou
     └── fluxos/             (planejado) cada fluxo principal explicado em prosa para quem nunca viu o projeto
 ```
 
